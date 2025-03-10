@@ -1,0 +1,84 @@
+function supprimerEmailParId(messageId) {
+  try {
+    var message = GmailApp.getMessageById(messageId);
+    if (message) {
+      message.moveToTrash();
+      //  Logger.log("Email avec l'ID " + messageId + " déplacé vers la corbeille.");
+    } else {
+      //  Logger.log("Email avec l'ID " + messageId + " introuvable.");
+    }
+  } catch (e) {
+    // Logger.log("Erreur lors de la suppression de l'email : " + e.toString());
+  }
+}
+
+function Mail_SUP() {
+
+  //var expediteurs = ["ASUS France", "Samsung", "Decathlon", "Auchan"];
+  var motCle1 = "code";
+  var motCle2 = "bons d'achat";
+  var motCle3 = "promo";
+  var motCle4 = "soldes"
+  var aSup = "n"  // variable pour valider si on supprime le mail
+
+  //for (var i = 0; i < expediteurs.length; i++) {
+    //var expediteur = expediteurs[i];
+    //Logger.log("Expediteur : " + expediteur); // Affiche la valeur dans les journaux d'exécution
+    // Vous pouvez effectuer d'autres opérations avec expediteur ici
+
+    //var query = 'from:' + expediteur; // + ' is:unread';
+    //var threads = GmailApp.search(query);
+    var threads = GmailApp.search('is:unread')
+
+    for (var i = 0; i < threads.length; i++) {
+      var messages = threads[i].getMessages();
+      //for (var j = 0; j < messages.length; j++) {
+      var message = messages[0];
+      var messageId = messages[0].getId(); // Récupère l'ID du premier message
+      var sender = message.getFrom();
+      var sujet = message.getSubject();
+
+      if ((sender.toLowerCase().indexOf("decathlon") !== -1 ||
+          sender.toLowerCase().indexOf("google") !== -1 ||
+          sender.toLowerCase().indexOf("samsung") !== -1)) {
+          	continue; // Passer à l'itération suivante pour laisser le mail
+      }
+
+      if (message.isUnread()) {
+
+        var corps = message.getPlainBody();
+        var date = message.getDate();   
+        var formattedDate = Utilities.formatDate(date, Session.getScriptTimeZone(), "yyyy-MM-dd"); // Modification ici          
+
+        //  opérateurs logiques && (ET) et || (OU)
+        var motCle1Trouve = corps.toLowerCase().indexOf(motCle1) !== -1;
+        var motCle2Trouve = corps.toLowerCase().indexOf(motCle2) !== -1;
+        var motCle3Trouve = corps.toLowerCase().indexOf(motCle3) !== -1;
+        var motCle4Trouve = corps.toLowerCase().indexOf(motCle4) !== -1;
+
+        if (motCle1Trouve || motCle2Trouve || motCle3Trouve || motCle4Trouve) {
+          continue; // Passer à l'itération suivante pour laisser le mail
+        }
+        
+        if (!(sujet.toLowerCase().indexOf("commande") !== -1 ||
+            sujet.toLowerCase().indexOf("fidélité ") !== -1 ||
+            sujet.toLowerCase().indexOf("votre ticket") !== -1 ||
+            sujet.toLowerCase().indexOf("récompense ") !== -1 ||
+            sujet.toLowerCase().indexOf("soldes") !== -1 ||
+            sujet.toLowerCase().indexOf("alerte de sécurité") !== -1)) {
+            	aSup = "o"
+          }
+                
+        if (aSup == "o") {  
+          // Logger.log("Email a supprimer : " + messageId + " : " + formattedDate + " - " + sender + " - " + sujet);
+          supprimerEmailParId(messageId)
+        }
+      }
+    
+      //}
+    
+    }
+
+  //}
+
+}
