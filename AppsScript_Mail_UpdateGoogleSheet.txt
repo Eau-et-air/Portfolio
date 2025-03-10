@@ -1,0 +1,85 @@
+
+function getOrCreateCandidaturesFolder() {
+  var candidaturesFolders = DriveApp.getFoldersByName("Candidature");
+  if (candidaturesFolders.hasNext()) {
+    return candidaturesFolders.next();
+  } else {
+    return DriveApp.createFolder("Candidature");
+  }
+}
+
+
+function extraireTexteEntre(texte, debut, fin) {
+  var debutIndex = texte.indexOf(debut) + debut.length;
+  var finIndex = texte.indexOf(fin, debutIndex);
+
+  if (debutIndex !== -1 && finIndex !== -1) {
+    var texteExtrait = texte.substring(debutIndex, finIndex).trim();
+    return texteExtrait;
+  } else {
+    return null; // Retourne null si la chaîne n'est pas trouvée
+  }
+}
+
+
+function stockerReponsesCandidatures() {
+
+  // Définir URL
+  var sheet = SpreadsheetApp.openByUrl('https://docs.google.com/...').getActiveSheet();
+  //var threads = GmailApp.search('subject:"candidature" from:nepasrepondre@societe.fr is:unread');
+  var MailExpediteur = "nepasrepondre@societe.fr"
+  var query = 'from:' + MailExpediteur + ' is:unread';
+  var candidatureFolder = getOrCreateCandidaturesFolder(); // Appel la fonction pour obtenir le dossier "candidature"
+
+  var threads = GmailApp.search(query);
+  for (var i = 0; i < threads.length; i++) {
+    var messages = threads[i].getMessages();
+    var message = messages[0]; // Récupère le premier message du fil
+       try {
+        var sender = message.getFrom();
+        var date = message.getDate(); 
+        var formattedDate = Utilities.formatDate(date, Session.getScriptTimeZone(), "yyyy-MM-dd"); // Modification format date pour ajout dans fichier
+        var typeReponse = "en attente"; // Valeur par défaut
+        var subject = message.getSubject();
+        var body = message.getPlainBody();
+
+        nomEntreprise= ""
+        var commentaires = subject
+
+        // Récupérer le nom de l'entreprise du sujet
+        if (subject.includes("Votre candidature chez ")) {
+          nomEntreprise = subject.split("Votre candidature chez ")[1];
+        }
+
+        // Recuperer le nom et l'adresse du body
+        if (!(subject.toLowerCase().includes("réponse négative"))) {
+          texte = body
+          var debut = "Votre candidature spontanée a bien été envoyée à ";
+          var fin = ".";
+          var texteExtrait = extraireTexteEntre(body, debut, fin);   // Appel la fonction et récupère la donnée dans la variable
+          if (texteExtrait) {
+            Logger.log("Texte extrait : " + texteExtrait);
+            commentaires = texteExtrait
+          }
+        }
+
+        if (subject.toLowerCase().includes("réponse négative")) {
+          typeReponse = "négative";
+        } else if (subject.toLowerCase().includes("réponse positive")){
+          typeReponse = "positive";
+        } else if (subject.toLowerCase().includes("Votre candidature")){
+          typeReponse = "Candidaté";
+        }     
+
+
+        Logger.log("Date: " + formattedDate + ", Expéditeur: " + sender); // Ajout de la ligne Logger.log()
+        sheet.appendRow([formattedDate, nomEntreprise, typeReponse, commentaires]);
+        message.markRead();       // Marquer comme lu
+
+
+      } catch (error) {
+        Logger.log("Erreur : " + error + " depuis l'e-mail : " + message.getSubject() + " de : " + message.getFrom());
+      }
+
+  }
+}
