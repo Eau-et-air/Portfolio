@@ -1,3 +1,5 @@
+# A partir d'un jeu de données public  Kagle :
+## Générer un graphique pour montrer les 10 pays dont la qualité de vie est la meilleure en 2024
 
 # Lien vers le jeu de données public
 ## https://www.kaggle.com/datasets/marcelobatalhah/quality-of-life-index-by-country"
