@@ -1,8 +1,5 @@
-﻿# Lister les comptes dont le mot de passe n'expire jamais
-# Et mettre à jour pour que le mot de passe expire
-
-# List accounts whose passwords never expire
-# And update them so that the password does expire
+﻿# French : Lister les comptes dont le mot de passe n'expire jamais et mettre à jour pour que le mot de passe expire
+# English : List accounts whose passwords never expire and update them so that the password does expire
 
 $Date_Day = Get-Date -UFormat %Y%m%d
 $Path = "z:\export"
@@ -58,5 +55,6 @@ Foreach ($member in $List_Accounts) {
     }
 
 } # Foreach end
+
 
 Invoke-Item $Path
