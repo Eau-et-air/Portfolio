@@ -1,12 +1,18 @@
-﻿# French : Lister les comptes dont le mot de passe n'expire jamais et mettre à jour pour que le mot de passe expire
-# English : List accounts whose passwords never expire and update them so that the password does expire
+
+# French : 
+## Pour les administrateurs de l'Active Directory
+## Lister les comptes dont le mot de passe n'expire jamais et mettre à jour pour que le mot de passe expire
+
+# English : 
+## For Active Directory Administrators
+## List accounts whose passwords never expire and update them so that the password does expire
 
 $Date_Day = Get-Date -UFormat %Y%m%d
 $Path = "z:\export"
 $Results_File = $Path + "\" + $Date_Day + " Maj_Cptes_PwdNeverExpires.csv"
 
-# Lister les comptes dont le mot de passe n'expire jamais, et afficher le nombre
-# List accounts whose passwords never expire, and display the number
+# French : Lister les comptes dont le mot de passe n'expire jamais, et afficher le nombre
+# English : List accounts whose passwords never expire, and display the number
 $List_Accounts = $Null
 $List_Accounts = "OU=LAB,DC=sun,DC=local" | ForEach { Get-ADUser -Filter * -Properties * -SearchBase $_ | Sort Surname} | Select CanonicalName, Description, DistinguishedName, Enabled, GivenName, LastLogon, LastLogonTimestamp, Mail, Name, PasswordExpired, PasswordLastSet, PasswordNeverExpires, PasswordNotRequired, SamAccountName, Surname, whenCreated, whenChanged
 $List_Accounts.count
@@ -14,13 +20,16 @@ $List_Accounts.count
 
 Cls
 
+# Delete the Results_File if exists
 If (Test-Path $Results_File) { 
     Remove-item -path $Results_File -force
 }
 
+# Create the Results_File with header line
 Add-Content -Path $Results_File -Value ("Login" + ";" + "Name_Firstname" + ";" + "OU" + ";" + "Pwd_LastSet" + ";" + "LastLogon" + ";" + "LastLogonTimeStamp" + ";" + "Enabled")
 
-
+# Loop through accounts to find those whose field PasswordNeverExpires is $False, and update it to $True
+# And export the account in the Results_File
 $Nb = 0
 Foreach ($member in $List_Accounts) {
 
@@ -58,3 +67,4 @@ Foreach ($member in $List_Accounts) {
 
 
 Invoke-Item $Path
+
